@@ -3,6 +3,9 @@
 Mali event-driven sistem za e-commerce domen. Tri Spring Boot servisa
 povezana preko Apache Kafke, plus deljeni modul sa event ugovorima.
 
+Note:
+Imajte u vidu da kda prvi put pokrecete compose up, moze da traje ~20min
+
 ## Moduli
 
 | Modul | Uloga |

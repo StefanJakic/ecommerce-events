@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: order-api
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ecommerce}
+    username: ${SPRING_DATASOURCE_USERNAME:app}
+    password: ${SPRING_DATASOURCE_PASSWORD:app}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.format_sql: true
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:order-api}
+    listener:
+      # Pravi observation span pri svakoj poll-ovanoj poruci, i koristi
+      # traceparent iz Kafka headers da nastavi distributed trace.
+      observation-enabled: true
+    template:
+      # Producer side: KafkaTemplate sam upisuje traceparent header iz
+      # trenutnog observation context-a. Mi i dalje rucno override-ujemo
+      # u outbox relay-u jer scheduled task ima drugi trace nego original.
+      observation-enabled: true
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+  # OTLP konfiguracija - Spring Boot 3.x konvencija
+  otlp:
+    metrics:
+      export:
+        enabled: true
+        url: http://otel-collector:4318/v1/metrics
+        step: 10s
+    tracing:
+      endpoint: http://otel-collector:4318/v1/traces
+
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  level:
+    root: INFO
+    com.example.orderapi: DEBUG
+    org.hibernate.SQL: WARN
+
+  config: classpath:logback-spring.xml

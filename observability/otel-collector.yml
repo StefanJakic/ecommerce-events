@@ -1,0 +1,58 @@
+# OpenTelemetry Collector konfiguracija
+#
+# Servisi salju metrike i tragove preko OTLP HTTP-a (push) ovde.
+# Collector ih onda:
+#   - metrike: izlaze u Prometheus formatu na :8889 (Prometheus scrape-uje OVO, ne servise)
+#   - tragove: salje u Tempo preko OTLP-a
+#
+# Prednost: servisi su non-web, lako se skaliraju.
+# Prometheus ne mora da zna gde su servisi - Collector je single source of truth.
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+    timeout: 10s
+  # Dodaj 'service' kao label svuda - bice tag u Prometheus-u
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: development
+        action: upsert
+
+exporters:
+  # Metrike -> Prometheus format na :8889 (Prometheus scrape-uje ovo)
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: ""
+    send_timestamps: true
+    metric_expiration: 5m
+    resource_to_telemetry_conversion:
+      enabled: true   # service, deployment.environment postaju labels
+
+  # Tragovi -> Tempo
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
+    tls:
+      insecure: true
+
+  # Debug izlaz (korisno za prvi run, ugasi u produkciji)
+  debug:
+    verbosity: basic
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [prometheus]
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlphttp/tempo]

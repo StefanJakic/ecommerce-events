@@ -1,0 +1,117 @@
+stjakic@RSM006242 MINGW64 ~/Downloads/ecommerce-events (20)/ecommerce-events
+$ # 1. Obrisi sva 3 glavna topica
+for t in orders.created inventory.reserved inventory.rejected; do
+  podman compose exec kafka kafka-topics \
+    --bootstrap-server localhost:29092 \
+    --delete --topic $t
+done
+
+# 2. Napravi ih iznova sa 12 particija svaki
+for t in orders.created inventory.reserved inventory.rejected; do
+  podman compose exec kafka kafka-topics \
+    --bootstrap-server localhost:29092 \
+    --create --topic $t \
+    --partitions 12 \
+    --replication-factor 1
+done
+
+# 3. Restart consumere da pokupe novu konfiguraciju
+podman compose restart order-api inventory-service
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+WARNING: Due to limitations in metric names, topics with a period ('.') or underscore ('_') could collide. To avoid issues it is best to use either, but not both.
+Error while executing topic command : Topic 'orders.created' already exists.
+[2026-05-22 05:19:11,460] ERROR org.apache.kafka.common.errors.TopicExistsException: Topic 'orders.created' already exists.
+ (kafka.admin.TopicCommand$)
+Error: executing C:\Users\stjakic\AppData\Local\Microsoft\WindowsApps\docker-compose.exe exec kafka kafka-topics --bootstrap-server localhost:29092 --create --topic orders.created --partitions 12 --replication-factor 1: exit status 1
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+WARNING: Due to limitations in metric names, topics with a period ('.') or underscore ('_') could collide. To avoid issues it is best to use either, but not both.
+Error while executing topic command : Topic 'inventory.reserved' already exists.
+[2026-05-22 05:19:15,795] ERROR org.apache.kafka.common.errors.TopicExistsException: Topic 'inventory.reserved' already exists.
+ (kafka.admin.TopicCommand$)
+Error: executing C:\Users\stjakic\AppData\Local\Microsoft\WindowsApps\docker-compose.exe exec kafka kafka-topics --bootstrap-server localhost:29092 --create --topic inventory.reserved --partitions 12 --replication-factor 1: exit status 1
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+WARNING: Due to limitations in metric names, topics with a period ('.') or underscore ('_') could collide. To avoid issues it is best to use either, but not both.
+Error while executing topic command : Topic 'inventory.rejected' already exists.
+[2026-05-22 05:19:19,674] ERROR org.apache.kafka.common.errors.TopicExistsException: Topic 'inventory.rejected' already exists.
+ (kafka.admin.TopicCommand$)
+Error: executing C:\Users\stjakic\AppData\Local\Microsoft\WindowsApps\docker-compose.exe exec kafka kafka-topics --bootstrap-server localhost:29092 --create --topic inventory.rejected --partitions 12 --replication-factor 1: exit status 1
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+[+] Restarting 4/4
+ ✔ Container order-api                             Started                                                                                                                                                  1.5s
+ ✔ Container ecommerce-events-inventory-service-2  Started                                                                                                                                                  1.6s
+ ✔ Container ecommerce-events-inventory-service-3  Started                                                                                                                                                  2.0s
+ ✔ Container ecommerce-events-inventory-service-1  Started                                                                                                                                                  1.4s
+
+stjakic@RSM006242 MINGW64 ~/Downloads/ecommerce-events (20)/ecommerce-events
+$ podman compose exec kafka kafka-consumer-groups \
+  --bootstrap-server localhost:29092 \
+  --group inventory-service \
+  --describe
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+
+GROUP             TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+inventory-service orders.created  0          -               0               -               consumer-inventory-service-3-59436b83-1d75-498d-8947-9e89df6ad6c7 /10.89.3.20     consumer-inventory-service-3
+inventory-service orders.created  1          -               0               -               consumer-inventory-service-3-59436b83-1d75-498d-8947-9e89df6ad6c7 /10.89.3.20     consumer-inventory-service-3
+inventory-service orders.created  2          -               0               -               consumer-inventory-service-3-59436b83-1d75-498d-8947-9e89df6ad6c7 /10.89.3.20     consumer-inventory-service-3
+inventory-service orders.created  3          -               0               -               consumer-inventory-service-3-59436b83-1d75-498d-8947-9e89df6ad6c7 /10.89.3.20     consumer-inventory-service-3
+inventory-service orders.created  8          -               0               -               consumer-inventory-service-3-af10f5f2-08a5-46e2-aa4b-5c83214f36b7 /10.89.3.19     consumer-inventory-service-3
+inventory-service orders.created  9          -               0               -               consumer-inventory-service-3-af10f5f2-08a5-46e2-aa4b-5c83214f36b7 /10.89.3.19     consumer-inventory-service-3
+inventory-service orders.created  10         -               0               -               consumer-inventory-service-3-af10f5f2-08a5-46e2-aa4b-5c83214f36b7 /10.89.3.19     consumer-inventory-service-3
+inventory-service orders.created  11         -               0               -               consumer-inventory-service-3-af10f5f2-08a5-46e2-aa4b-5c83214f36b7 /10.89.3.19     consumer-inventory-service-3
+inventory-service orders.created  4          -               0               -               consumer-inventory-service-3-98c7b2bf-b733-43e7-aeb1-ad8840a8a31d /10.89.3.17     consumer-inventory-service-3
+inventory-service orders.created  5          -               0               -               consumer-inventory-service-3-98c7b2bf-b733-43e7-aeb1-ad8840a8a31d /10.89.3.17     consumer-inventory-service-3
+inventory-service orders.created  6          -               0               -               consumer-inventory-service-3-98c7b2bf-b733-43e7-aeb1-ad8840a8a31d /10.89.3.17     consumer-inventory-service-3
+inventory-service orders.created  7          -               0               -               consumer-inventory-service-3-98c7b2bf-b733-43e7-aeb1-ad8840a8a31d /10.89.3.17     consumer-inventory-service-3
+
+stjakic@RSM006242 MINGW64 ~/Downloads/ecommerce-events (20)/ecommerce-events
+$ ./bulk-test.sh
+Pocetak: 07:20:26
+Kraj: 07:20:30
+Poslato 30 ordera, cekam saga da se zavrsi...
+
+=== Stanje u bazi ===
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+ CONFIRMED | -                  |   20
+ REJECTED  | INSUFFICIENT_STOCK |   20
+ REJECTED  | UNKNOWN_SKU        |   20
+
+
+=== Particije po Inventory instanci ===
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+  ecommerce-events-inventory-service-1 -> 4 particija
+  ecommerce-events-inventory-service-2 -> 4 particija
+  ecommerce-events-inventory-service-3 -> 4 particija
+
+Pogledaj sad Grafanu/Prometheus za grafove
+
+stjakic@RSM006242 MINGW64 ~/Downloads/ecommerce-events (20)/ecommerce-events
+$ for c in $(podman compose ps -q inventory-service); do
+  name=$(podman ps --filter id=$c --format '{{.Names}}')
+  echo ""
+  echo "=== $name ==="
+  podman logs $c 2>&1 | grep -oE "partitions assigned: \[orders\.created-[0-9, -]+" | tail -1
+done
+>>>> Executing external compose provider "C:\\Users\\stjakic\\AppData\\Local\\Microsoft\\WindowsApps\\docker-compose.exe". Please see podman-compose(1) for how to disable this message. <<<<
+
+
+=== ecommerce-events-inventory-service-1 ===
+partitions assigned: [orders.created-4,
+
+=== ecommerce-events-inventory-service-2 ===
+partitions assigned: [orders.created-8,
+
+=== ecommerce-events-inventory-service-3 ===
+partitions assigned: [orders.created-0,

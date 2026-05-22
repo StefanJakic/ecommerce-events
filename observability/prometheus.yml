@@ -1,0 +1,14 @@
+# Prometheus scrape-uje SAMO OTel Collector.
+# Servisi salju metrike preko OTLP push-a u Collector.
+# Collector ih izlozi u Prometheus formatu na :8889 - Prometheus ih scrape-uje odavde.
+#
+# Prednost: dodavanje novog servisa ne menja prometheus.yml.
+# Skaliranje servisa ne menja Prometheus konfiguraciju.
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8889']
